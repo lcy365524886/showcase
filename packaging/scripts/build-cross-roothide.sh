@@ -269,6 +269,7 @@ cat > "$STAGE/Library/LaunchDaemons/ch.ringwald.BTstack.plist" <<'PLIST'
 </dict>
 </plist>
 PLIST
+fi
 
 # DEBIAN control scripts
 fill_version "$CONTROL" > "$STAGE/DEBIAN/control"
