@@ -33,6 +33,7 @@ CFLAGS_COMMON=(
   -mios-version-min="$MIN_IOS"
   -fobjc-arc
   -Wl,-undefined,dynamic_lookup
+  -Wl,-not_for_dyld_shared_cache
 )
 
 . "$ROOT/scripts/version.sh"
@@ -114,6 +115,7 @@ done
   -install_name /usr/lib/libBTstack.dylib \
   -framework Foundation -framework CoreFoundation \
   -Wl,-undefined,dynamic_lookup \
+  -Wl,-not_for_dyld_shared_cache \
   "$BTSTACK_OBJDIR"/*.o \
   -o "$STAGE/usr/lib/libBTstack.dylib"
 echo "       -> libBTstack.dylib built"
@@ -189,6 +191,7 @@ done
 "$CLANG" -isysroot "$SDKROOT" -arch "$ARCH" -mios-version-min="$MIN_IOS" \
   -framework Foundation -framework CoreFoundation -framework IOKit \
   -Wl,-undefined,dynamic_lookup \
+  -Wl,-not_for_dyld_shared_cache \
   "$BTD_OBJDIR"/*.o \
   -o "$STAGE/usr/bin/BTdaemon"
 echo "       -> BTdaemon built"
