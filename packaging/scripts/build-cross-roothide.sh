@@ -156,7 +156,6 @@ BTD_C_SOURCES=(
   "$BTSTACK_ROOT/port/ios/src/hci_transport_h4_iphone.c"
   "$BTSTACK_ROOT/port/ios/src/hci_transport_skywalk_iphone.c"
   "$BTSTACK_ROOT/port/ios/SpringBoardAccess/SpringBoardAccess.c"
-  "$BTSTACK_ROOT/stubs.c"
 )
 
 BTD_M_SOURCES=(
