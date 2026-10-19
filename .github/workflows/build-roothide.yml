@@ -1,0 +1,62 @@
+name: Build RootHide Package
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'source/**'
+      - 'btstack-rootless/**'
+      - 'packaging/control-roothide/**'
+      - 'packaging/scripts/build-cross-roothide.sh'
+      - '.github/workflows/build-roothide.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install ldid dpkg
+          xcode-select --install 2>/dev/null || true
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Verify Xcode SDK
+        run: |
+          xcrun --sdk iphoneos --show-sdk-path
+          xcrun --sdk iphoneos -f clang
+
+      - name: Build RootHide package
+        run: |
+          chmod +x packaging/scripts/build-cross-roothide.sh
+          ./packaging/scripts/build-cross-roothide.sh
+
+      - name: Verify package
+        run: |
+          DEB=$(ls packaging/build-cross/*.deb 2>/dev/null | head -1)
+          if [ -z "$DEB" ]; then
+            echo "No deb package found!"
+            exit 1
+          fi
+          echo "Package: $DEB"
+          dpkg-deb -I "$DEB"
+          echo "---"
+          dpkg-deb -c "$DEB" | head -50
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: showcase-roothide-deb
+          path: packaging/build-cross/*.deb
+          retention-days: 30
+
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: packaging/build-cross/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -195,6 +195,12 @@ static void ip_log_open(void) {
 #define BLUETOOTHD_PLIST  "/System/Library/LaunchDaemons/com.apple.bluetoothd.plist"
 #define BT_READY_PATH     "/tmp/showcase_bt_ready"
 #define BLUETOOL_PLIST    "/System/Library/LaunchDaemons/com.apple.BlueTool.plist"
+/* RootHide reuses the rootless code paths (/var/jb symlink to jbroot). */
+#ifdef SHOWCASE_ROOTHIDE
+#ifndef SHOWCASE_ROOTLESS
+#define SHOWCASE_ROOTLESS 1
+#endif
+#endif
 #ifdef SHOWCASE_ROOTLESS
 #define JB_PREFIX         "/var/jb"
 #ifndef SHOWCASE_BTSTACK_PLIST
@@ -902,7 +908,9 @@ static NSString *bluetooth_diagnostic_report(
             ? @"converged-skywalk-present"
             : (registry == BluetoothRegistryProbeMissing
                 ? @"supported-transport-missing" : @"unavailable"));
-#ifdef SHOWCASE_ROOTLESS
+#ifdef SHOWCASE_ROOTHIDE
+    NSString *layout = @"roothide";
+#elif defined(SHOWCASE_ROOTLESS)
     NSString *layout = @"rootless";
 #else
     NSString *layout = @"rootful";
@@ -5102,7 +5110,9 @@ static NSString *hotspot_name(void) {
     NSMutableString *env = [NSMutableString string];
     [env appendFormat:@"Showcase diagnostics\n"];
     [env appendFormat:@"version=%s\n", APP_VERSION];
-#ifdef SHOWCASE_ROOTLESS
+#ifdef SHOWCASE_ROOTHIDE
+    [env appendString:@"layout=roothide\n"];
+#elif defined(SHOWCASE_ROOTLESS)
     [env appendString:@"layout=rootless\n"];
 #else
     [env appendString:@"layout=rootful\n"];
@@ -7395,7 +7405,9 @@ int main(int argc, char *argv[]) {
     ip_log_open();
     ip_log("main: ruid=%u euid=%u argc=%d", getuid(), geteuid(), argc);
     ip_log("bundle: %s", [[[NSBundle mainBundle] bundlePath] UTF8String]);
-#ifdef SHOWCASE_ROOTLESS
+#ifdef SHOWCASE_ROOTHIDE
+    ip_log("build: %s roothide", APP_VERSION);
+#elif defined(SHOWCASE_ROOTLESS)
     ip_log("build: %s rootless", APP_VERSION);
 #else
     ip_log("build: %s rootful", APP_VERSION);

@@ -40,7 +40,7 @@ Beta 4
 
 Showcase turns an older jailbroken Apple device into a software wireless CarPlay receiver. The iPhone pairs through Settings, joins the receiver's hotspot, sends the encrypted CarPlay video stream, and receives touch input from the receiver.
 
-Showcase ships in rootful and rootless package layouts. Both use iOS 12 as the deployment minimum.
+Showcase ships in rootful, rootless, and RootHide package layouts. Rootful and rootless use iOS 12 as the deployment minimum; RootHide targets iOS 15+ on A12+ devices (iphoneos-arm64e).
 
 ## Install
 
@@ -65,7 +65,8 @@ https://aminerostane.com/articles/showcase
 | Receiver | Jailbroken iPhone or iPad with Personal Hotspot |
 | Tested rootful receiver | iPad Air 1, A1475, iPad4,2, iOS 12.5.8, checkra1n |
 | Tested rootless receiver | iPhone 7, iPhone9,3, iOS 15.8.4, Dopamine rootless |
-| Runtime packages | Rootful uses `uikittools`; rootless uses `uikittools` and `ldid` |
+| RootHide support | iOS 15+ on A12+ devices, RootHide Bootstrap, architecture iphoneos-arm64e |
+| Runtime packages | Rootful uses `uikittools`; rootless and RootHide use `uikittools` and `ldid` |
 
 Sileo, Cydia, and Zebra install runtime packages through normal APT dependency resolution. Manual dependency installation is only needed when sideloading a `.deb` with `dpkg -i`.
 
@@ -151,9 +152,16 @@ cd packaging
 ./scripts/fetch-installed-app.sh
 ./scripts/build-rootful-deb.sh
 ./scripts/build-rootless-deb.sh
+./scripts/build-roothide-deb.sh
 ./scripts/build-taurine-deb.sh
 ./scripts/generate-apt-repo.py repo
 ```
+
+`build-roothide-deb.sh` builds `com.rostane.showcase` for RootHide jailbreaks (iphoneos-arm64e). It compiles with `-DSHOWCASE_ROOTHIDE=1` (which implies `SHOWCASE_ROOTLESS` in the source), packages files in rootful-style paths (the dpkg runtime root is jbroot), and reuses the rootless helper binary names. It requires a jailbroken device with clang, ldid, dpkg-deb, and install_name_tool, reachable over SSH.
+
+For cross-compilation on macOS without a jailbroken device, use `build-cross-roothide.sh`. It uses Xcode's iPhoneOS SDK to compile all components (including libBTstack.dylib and BTdaemon from source) for arm64e, signs with ldid, and packages the deb. Install dependencies with `brew install ldid dpkg`.
+
+A GitHub Actions workflow (`.github/workflows/build-roothide.yml`) automates the cross-build on macOS runners and uploads the deb as an artifact.
 
 `build-taurine-deb.sh` builds `com.rostane.showcase-taurine` on the rootful device: Showcase compiled with `SHOWCASE_TAURINE`, the BTdaemon from `btstack-rootless/` and BTQuiet. It depends on iOS 14 and conflicts with the regular package, so other jailbreaks never get it. `VARIANT=taurine ./build_and_install.sh` installs the same app for testing.
 

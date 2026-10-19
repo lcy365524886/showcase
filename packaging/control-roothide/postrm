@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+run_uicache() {
+    for tool in /usr/bin/uicache /bin/uicache /rootfs/usr/bin/uicache; do
+        if [ -x "$tool" ]; then
+            "$tool" "$@" 2>/dev/null || true
+            return
+        fi
+    done
+}
+
+run_uicache --unregister /Applications/Showcase.app 2>/dev/null || true
+run_uicache --all 2>/dev/null || true
+
+exit 0
